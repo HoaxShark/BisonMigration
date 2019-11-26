@@ -19,7 +19,7 @@ public class BoidController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        boids = GameObject.FindGameObjectsWithTag("Bison");
     }
 
     // Update is called once per frame
@@ -50,6 +50,7 @@ public class BoidController : MonoBehaviour
 
         if(Input.GetMouseButtonDown(0))
         {
+            playerTargetObject.SetActive(true);
             playerTargetObject.transform.position = new Vector3(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y, 0);
         }
     }
@@ -67,7 +68,9 @@ public class BoidController : MonoBehaviour
 
             boid.GetComponent<Rigidbody>().velocity = boid.GetComponent<Rigidbody>().velocity + v1 + v2 + v3 + v4 + constantForwardMovement;
 
-            //BoidSpeedLimit(boid);
+            BoidSpeedLimit(boid);
+
+            boid.transform.forward = -(boid.GetComponent<Rigidbody>().velocity + v1 + v2 + v3 + v4 + constantForwardMovement);
         }
     }
 
@@ -124,7 +127,15 @@ public class BoidController : MonoBehaviour
 
     Vector3 TargetPosition(GameObject thisBoid)
     {
-        return (playerTargetObject.transform.position - thisBoid.transform.position) / 100;
+        if(playerTargetObject.activeSelf)
+        {
+            float distance = Vector3.Distance(playerTargetObject.transform.position, thisBoid.transform.position);
+            return (playerTargetObject.transform.position - thisBoid.transform.position) / distance;
+        }
+        else
+        {
+            return new Vector3(0, 0, 0);
+        }
     }
 
     void BoidSpeedLimit(GameObject thisBoid)
@@ -133,5 +144,17 @@ public class BoidController : MonoBehaviour
         {
             thisBoid.GetComponent<Rigidbody>().velocity = ((thisBoid.GetComponent<Rigidbody>().velocity / thisBoid.GetComponent<Rigidbody>().velocity.sqrMagnitude) * boidSpeedLimit) + (playerTargetObject.transform.position - thisBoid.transform.position) / 100 + constantForwardMovement;
         }
+    }
+
+    void BoundPositions(GameObject otherBoid)
+    {
+        float xMin, xMax, yMin, yMax;
+        Vector3 v = new Vector3(0, 0, 0);
+        xMin = Camera.main.transform.position.x - (Camera.main.scaledPixelWidth / 2);
+        xMax = Camera.main.transform.position.x + (Camera.main.scaledPixelWidth / 2);
+        yMin = Camera.main.transform.position.y - (Camera.main.scaledPixelHeight / 2);
+        yMax = Camera.main.transform.position.y + (Camera.main.scaledPixelHeight / 2);
+
+
     }
 }
